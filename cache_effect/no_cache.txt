@@ -1,0 +1,11 @@
+info: running on device Fiji
+Row=256,  It took me (0.536000 milliseconds), Gflops=0.024454
+Row=512,  It took me (0.550000 milliseconds), Gflops=0.047663
+Row=1024, It took me (0.548000 milliseconds), Gflops=0.095673
+Row=2048, It took me (0.562000 milliseconds), Gflops=0.186579
+Row=4096, It took me (0.231000 milliseconds), Gflops=0.907858
+Row=8192, It took me (0.234000 milliseconds), Gflops=1.792438
+Row=16384, It took me (0.361000 milliseconds), Gflops=2.323714
+Row=32768, It took me (0.349000 milliseconds), Gflops=4.807225
+Row=65536, It took me (0.326000 milliseconds), Gflops=10.292771
+Row=131072, It took me (0.586000 milliseconds), Gflops=11.452025
