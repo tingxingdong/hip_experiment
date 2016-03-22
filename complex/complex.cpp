@@ -95,6 +95,14 @@ rocblas_sum_kernel(hipLaunchParm lp, T *res, const T *A, size_t N)
 
     }
 
+    /*! \brief  generate a random number between [0, 0.999...] . */
+    template<typename T>
+    T random_generator(){
+        return rand()/( (T)RAND_MAX + 1);
+    };
+
+
+
 int main(int argc, char *argv[])
 {
 	rocblas_float_complex *A_d, *C_d;
@@ -140,13 +148,16 @@ int main(int argc, char *argv[])
 
     printf("sgemv flops = %f\n", gemv_gflops<float>(N, N));
 
-
+  
 
 	printf ("info: check result\n");
 
     rocblas_float_complex result;
     //
     result = 0; //both real, imag compoent will be initilaized with 0
+    printf("result.x = %f, result.y=%f \n", result.x, result.y);
+
+    result = random_generator<rocblas_float_complex>();
     printf("result.x = %f, result.y=%f \n", result.x, result.y);
 
     //the +=, = operators are overloaed already
