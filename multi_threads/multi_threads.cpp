@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     int thread_id;
 
 	hipDeviceProp_t props;
-	CHECK(hipDeviceGetProperties(&props, 0/*deviceID*/));
+	CHECK(hipGetDeviceProperties(&props, 0/*deviceID*/));
 	printf ("info: running on device %s\n", props.name);
 
     hipStream_t  streams[NUM_THREADS];

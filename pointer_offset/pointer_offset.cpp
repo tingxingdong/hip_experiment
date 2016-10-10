@@ -6,12 +6,6 @@
 
 #include <stdio.h>
 #include <hip_runtime.h>
-#include <hip_vector_types.h>
-#include <typeinfo> 
-//using namespace std;
-
-typedef float2 rocblas_float_complex;
-
 
 #define CHECK(error) \
     if (error != hipSuccess) { \
@@ -20,7 +14,8 @@ typedef float2 rocblas_float_complex;
 	}
 
 
-/*! \brief This file verify the complex operations in the hip context.
+
+/*! \brief This device function is used in various BLAS routines demanding reduction sum.
 
 
     \details
@@ -84,65 +79,33 @@ rocblas_sum_kernel(hipLaunchParm lp, T *res, const T *A, size_t N)
     res[0] = shared_A[0] ;
 }
 
-    template<typename T>
-    double  gemv_gflops(int m, int n){
-        if (typeid(T) == typeid(rocblas_float_complex)) {
-            return (double)(8 * m * n)/1e9;
-        }
-        else{
-            return (double)(2*m*n)/1e9;
-        }    
-
-    }
-
-    /*! \brief  generate a random number between [0, 0.999...] . */
-    template<typename T>
-    T random_generator(){
-        return rand()/( (T)RAND_MAX + 1);
-    };
-
-
-    template<typename T>
-    void condition_test()
-    {
-        if( typeid(T) == typeid(rocblas_float_complex) )
-        {
-            float a;
-        }
-        else{
-            double a;
-        }
-        a = 1.0;
-    }
 
 int main(int argc, char *argv[])
 {
-	rocblas_float_complex *A_d, *C_d;
-	rocblas_float_complex *A_h, *C_h;
+	float *A_d, *C_d;
+	float *A_h, *C_h;
 	size_t N = NB_X;
-	size_t Nbytes = N * sizeof(rocblas_float_complex);
+	size_t Nbytes = N * sizeof(float);
 
 	hipDeviceProp_t props;
-	CHECK(hipDeviceGetProperties(&props, 0/*deviceID*/));
+	CHECK(hipGetDeviceProperties(&props, 0/*deviceID*/));
 	printf ("info: running on device %s\n", props.name);
 
 	printf ("info: allocate host mem (%6.2f KB)\n", 2*Nbytes/1024.0);
-	A_h = (rocblas_float_complex*)malloc(Nbytes);
+	A_h = (float*)malloc(Nbytes);
 	CHECK(A_h == 0 ? hipErrorMemoryAllocation : hipSuccess );
 
-    C_h = (rocblas_float_complex*)malloc(sizeof(rocblas_float_complex));
+    C_h = (float*)malloc(sizeof(float));
 	CHECK(C_h == 0 ? hipErrorMemoryAllocation : hipSuccess );
 	// Fill with Phi + i
-
-    //access with a.x, a.y
     for (size_t i=0; i<N; i++)
 	{
-		A_h[i].x = A_h[i].y = 1.618f ;
+		A_h[i] = 1.618f + i;
 	}
 
 	printf ("info: allocate device mem (%6.2f KB)\n", 2*Nbytes/1024.0);
 	CHECK(hipMalloc(&A_d, Nbytes));
-	CHECK(hipMalloc(&C_d, sizeof(rocblas_float_complex)));
+	CHECK(hipMalloc(&C_d, sizeof(float)));
 
 
 	printf ("info: copy Host2Device\n");
@@ -155,34 +118,20 @@ int main(int argc, char *argv[])
 	hipLaunchKernel(HIP_KERNEL_NAME(rocblas_sum_kernel), dim3(blocks), dim3(threadsPerBlock), 0, 0, C_d, A_d, N);
 
 	printf ("info: copy Device2Host\n");
-    CHECK ( hipMemcpy(C_h, C_d, sizeof(rocblas_float_complex), hipMemcpyDeviceToHost));
+    CHECK ( hipMemcpy(C_h, C_d, sizeof(float), hipMemcpyDeviceToHost));
 
-
-    printf("sgemv flops = %f\n", gemv_gflops<float>(N, N));
-
-    
 	printf ("info: check result\n");
+    float result = 0.0;
 
-    rocblas_float_complex result;
-    //
-    result = 0; //both real, imag compoent will be initilaized with 0
-    printf("result.x = %f, result.y=%f \n", result.x, result.y);
-
-    result = random_generator<rocblas_float_complex>();
-    printf("result.x = %f, result.y=%f \n", result.x, result.y);
-
-    //the +=, = operators are overloaed already
     for (size_t i=0; i<N; i++)  {
         result += A_h[i];
     }
 
-    printf("CPU result=%f, GPU result=%f\n", result.x, C_h[0].x);
-
+    printf("CPU result=%f, GPU result=%f\n", result, C_h[0]);
 
     if (C_h[0] != result) {
 		CHECK(hipErrorUnknown);
 	}
-
 	printf ("PASSED!\n");
 
     hipFree(C_d);

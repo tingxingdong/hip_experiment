@@ -76,7 +76,7 @@ rocblas_sum_kernel(hipLaunchParm lp, T *res, const T *A, size_t N)
 
     rocblas_sum_reduce<NB_X, T>(tx, shared_A);
 
-    res[0] = shared_A[0] ;
+    if(tx == 0) res[0] = shared_A[0] ;
 }
 
 
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 	size_t Nbytes = N * sizeof(float);
 
 	hipDeviceProp_t props;
-	CHECK(hipDeviceGetProperties(&props, 0/*deviceID*/));
+	CHECK(hipGetDeviceProperties(&props, 0/*deviceID*/));
 	printf ("info: running on device %s\n", props.name);
 
 	printf ("info: allocate host mem (%6.2f KB)\n", 2*Nbytes/1024.0);
@@ -137,6 +137,3 @@ int main(int argc, char *argv[])
     hipFree(C_d);
     hipFree(A_d);
 }
-
-
-

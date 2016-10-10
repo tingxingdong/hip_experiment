@@ -101,7 +101,19 @@ rocblas_sum_kernel(hipLaunchParm lp, T *res, const T *A, size_t N)
         return rand()/( (T)RAND_MAX + 1);
     };
 
-
+   //won't compile 
+    template<typename T>
+    void condition_test()
+    {
+        if( typeid(T) == typeid(rocblas_float_complex) )
+        {
+            float a;
+        }
+        else{
+            double a;
+        }
+        auto a = 1.0;
+    }
 
 int main(int argc, char *argv[])
 {
@@ -111,7 +123,7 @@ int main(int argc, char *argv[])
 	size_t Nbytes = N * sizeof(rocblas_float_complex);
 
 	hipDeviceProp_t props;
-	CHECK(hipDeviceGetProperties(&props, 0/*deviceID*/));
+	CHECK(hipGetDeviceProperties(&props, 0/*deviceID*/));
 	printf ("info: running on device %s\n", props.name);
 
 	printf ("info: allocate host mem (%6.2f KB)\n", 2*Nbytes/1024.0);
@@ -148,8 +160,7 @@ int main(int argc, char *argv[])
 
     printf("sgemv flops = %f\n", gemv_gflops<float>(N, N));
 
-  
-
+    
 	printf ("info: check result\n");
 
     rocblas_float_complex result;

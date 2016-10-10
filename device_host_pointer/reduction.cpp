@@ -6,12 +6,6 @@
 
 #include <stdio.h>
 #include <hip_runtime.h>
-#include <hip_vector_types.h>
-#include <typeinfo> 
-//using namespace std;
-
-typedef float2 rocblas_float_complex;
-
 
 #define CHECK(error) \
     if (error != hipSuccess) { \
@@ -20,7 +14,8 @@ typedef float2 rocblas_float_complex;
 	}
 
 
-/*! \brief This file verify the complex operations in the hip context.
+
+/*! \brief This device function is used in various BLAS routines demanding reduction sum.
 
 
     \details
@@ -60,9 +55,9 @@ rocblas_sum_reduce( int i, T* x )
  * Square each element in the array A and write to array C.
  */
 
-#define NB_X  512
+#define NB_X  1024
 
-template <typename T>
+template <typename T, int NB>
 __global__ void
 rocblas_sum_kernel(hipLaunchParm lp, T *res, const T *A, size_t N)
 {
@@ -75,74 +70,63 @@ rocblas_sum_kernel(hipLaunchParm lp, T *res, const T *A, size_t N)
 
     int tx = hipThreadIdx_x;
 
-    __shared__ T shared_A[NB_X];
+    __shared__ T shared_A[NB];
 
     shared_A[tx] = A[tid];
 
-    rocblas_sum_reduce<NB_X, T>(tx, shared_A);
+    rocblas_sum_reduce<NB, T>(tx, shared_A);
 
     res[0] = shared_A[0] ;
 }
 
-    template<typename T>
-    double  gemv_gflops(int m, int n){
-        if (typeid(T) == typeid(rocblas_float_complex)) {
-            return (double)(8 * m * n)/1e9;
-        }
-        else{
-            return (double)(2*m*n)/1e9;
-        }    
 
-    }
+int rocblas_get_pointer_type(void *ptr){
 
-    /*! \brief  generate a random number between [0, 0.999...] . */
-    template<typename T>
-    T random_generator(){
-        return rand()/( (T)RAND_MAX + 1);
-    };
+        hipPointerAttribute_t attribute;
 
+        hipError_t status =  hipPointerGetAttributes(&attribute, ptr);
 
-    template<typename T>
-    void condition_test()
-    {
-        if( typeid(T) == typeid(rocblas_float_complex) )
+        if(status != hipSuccess)
         {
-            float a;
+             printf("failed to get the attribute\n");
         }
-        else{
-            double a;
-        }
-        a = 1.0;
-    }
+        //if (ptr == attribute.hostPointer) return 0; //HOST_POINTER;
+        //else return 1;
+
+        if (ptr == attribute.devicePointer) return 1;//DEVICE_POINTER;
+        else return 0;
+
+}
 
 int main(int argc, char *argv[])
 {
-	rocblas_float_complex *A_d, *C_d;
-	rocblas_float_complex *A_h, *C_h;
+	float *A_d, *C_d;
+	float *A_h;
 	size_t N = NB_X;
-	size_t Nbytes = N * sizeof(rocblas_float_complex);
+	size_t Nbytes = N * sizeof(float);
 
 	hipDeviceProp_t props;
-	CHECK(hipDeviceGetProperties(&props, 0/*deviceID*/));
+	CHECK(hipGetDeviceProperties(&props, 0/*deviceID*/));
 	printf ("info: running on device %s\n", props.name);
 
 	printf ("info: allocate host mem (%6.2f KB)\n", 2*Nbytes/1024.0);
-	A_h = (rocblas_float_complex*)malloc(Nbytes);
+	A_h = (float*)malloc(Nbytes);
 	CHECK(A_h == 0 ? hipErrorMemoryAllocation : hipSuccess );
 
-    C_h = (rocblas_float_complex*)malloc(sizeof(rocblas_float_complex));
-	CHECK(C_h == 0 ? hipErrorMemoryAllocation : hipSuccess );
-	// Fill with Phi + i
+    //C_h = (float*)malloc(sizeof(float));
+	//CHECK(C_h == 0 ? hipErrorMemoryAllocation : hipSuccess );
 
-    //access with a.x, a.y
+    float C_h;
+
+	// Fill with Phi + i
     for (size_t i=0; i<N; i++)
 	{
-		A_h[i].x = A_h[i].y = 1.618f ;
+		A_h[i] = 1.618f + i;
 	}
 
 	printf ("info: allocate device mem (%6.2f KB)\n", 2*Nbytes/1024.0);
 	CHECK(hipMalloc(&A_d, Nbytes));
-	CHECK(hipMalloc(&C_d, sizeof(rocblas_float_complex)));
+	CHECK(hipMalloc(&C_d, sizeof(float)));
 
 
 	printf ("info: copy Host2Device\n");
@@ -151,43 +135,33 @@ int main(int argc, char *argv[])
 	const unsigned blocks = 1;
 	const unsigned threadsPerBlock = NB_X;
 
+    printf("C_d is pointer type %d\n", rocblas_get_pointer_type(C_d) );
+
+    printf("C_h is pointer type %d\n", rocblas_get_pointer_type(&C_h) );
+
+
 	printf ("info: launch 'rocblas_sum_kernel' kernel\n");
-	hipLaunchKernel(HIP_KERNEL_NAME(rocblas_sum_kernel), dim3(blocks), dim3(threadsPerBlock), 0, 0, C_d, A_d, N);
+	hipLaunchKernel(HIP_KERNEL_NAME(rocblas_sum_kernel<float, NB_X>), dim3(blocks), dim3(threadsPerBlock), 0, 0, C_d, A_d, N);
 
 	printf ("info: copy Device2Host\n");
-    CHECK ( hipMemcpy(C_h, C_d, sizeof(rocblas_float_complex), hipMemcpyDeviceToHost));
 
 
-    printf("sgemv flops = %f\n", gemv_gflops<float>(N, N));
+    CHECK ( hipMemcpy(&C_h, C_d, sizeof(float), hipMemcpyDeviceToHost));
 
-    
 	printf ("info: check result\n");
+    float result = 0.0;
 
-    rocblas_float_complex result;
-    //
-    result = 0; //both real, imag compoent will be initilaized with 0
-    printf("result.x = %f, result.y=%f \n", result.x, result.y);
-
-    result = random_generator<rocblas_float_complex>();
-    printf("result.x = %f, result.y=%f \n", result.x, result.y);
-
-    //the +=, = operators are overloaed already
     for (size_t i=0; i<N; i++)  {
         result += A_h[i];
     }
 
-    printf("CPU result=%f, GPU result=%f\n", result.x, C_h[0].x);
+    printf("CPU result=%f, GPU result=%f\n", result, C_h);
 
-
-    if (C_h[0] != result) {
+    if (C_h != result) {
 		CHECK(hipErrorUnknown);
 	}
-
 	printf ("PASSED!\n");
 
     hipFree(C_d);
     hipFree(A_d);
 }
-
-
-

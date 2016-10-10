@@ -188,7 +188,7 @@ int main(int argc, char *argv[])
 	float *X_h, *X_d;
 
 	hipDeviceProp_t props;
-	CHECK(hipDeviceGetProperties(&props, 0/*deviceID*/));
+	CHECK(hipGetDeviceProperties(&props, 0/*deviceID*/));
 	printf ("info: running on device %s\n", props.name);
 
 //bug will appear if num_row is too big 3125*128
