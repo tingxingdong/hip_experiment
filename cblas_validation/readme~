@@ -1,0 +1,47 @@
+
+Before to run, install required cblas library if you have not
+
+   "sudo apt-get install libblas-dev lapack-dev"
+
+
+Step to run 
+
+
+1) make sure the size of line 33 in "generate_input.py" and line 51 in "testing_gemm.cpp" are the SAME. 
+   e.g 192, since 192 is the case I care. But you can freely change it.  
+   here, M=N=K, since square matrix is my concern.
+   
+   in my setting, I set "transA as notrans, transB as trans", as "GEMM NT" is my concern.
+   you can freely change the matrix' transpose option in line 61 & 62 in "testing_gemm.cpp".   
+
+2)
+   "python generate_input.py"
+   
+   to get "A_col_major.txt" and  "B_col_major.txt" 
+    
+   Initially, I set A as random number between [0, 10], B as all "1".
+ 
+   Read comment line 36-40 to see how to initilize matrix A, matrix B differently
+
+3) "g++ testing_gemm.cpp -lblas"
+    
+4) ./a.out   
+
+    this execuatable reads the above generated input txt files. 
+
+    It dumps result matrix C in "result_C_col_major.txt"
+
+
+Notice, in all *.txt files, the matrix is column major, as the whole column is consecutive in memory.
+
+That is
+
+    input format        1 2 3 
+                        4 5 6
+
+    in memory it is [1, 4, 2, 5, 3, 6]
+
+If you need to read .txt file into your CPU array.
+See the function "read_txt_file" in "testing_gemm.cpp" for how I read column major txt files into a vector<float> 
+
+
