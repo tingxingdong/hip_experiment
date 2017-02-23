@@ -39,7 +39,7 @@ int main()
 
     HIP_ASSERT(hipMalloc((void**)&Ad, LEN));
 
-    //HIP_ASSERT(hipMemcpyToSymbol(HIP_SYMBOL(Value), A, sizeof(int)*LEN, 0, hipMemcpyHostToDevice));
+    //directly copy does not work on rocm 14. HIP_ASSERT(hipMemcpyToSymbol(HIP_SYMBOL(Value), A, sizeof(int)*LEN, 0, hipMemcpyHostToDevice));
 
     printf(" 2-------------- ");
 
