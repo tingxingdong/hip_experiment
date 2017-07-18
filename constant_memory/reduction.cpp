@@ -11,12 +11,13 @@
 #define HIP_ASSERT(status) \
     assert(status == hipSuccess)
 
-#define LEN 6
+#define LEN 24
 
 //Starting from ROCM 1.4,you can directly fill number with constant memory
 //However, there is no constant hardware, it still goes through global memory, but it makes programming easier
- 
-__constant__ int Value[] = {100, 1, 2, 20, 100, 245};
+
+//__constant__ int Value[] = {100, 1, 2, 20, 100, 245};
+__constant__ int Value[LEN];
 
 __global__ void Get(hipLaunchParm lp, int *Ad)
 {
@@ -39,7 +40,9 @@ int main()
 
     HIP_ASSERT(hipMalloc((void**)&Ad, LEN));
 
-    //directly copy does not work on rocm 14. HIP_ASSERT(hipMemcpyToSymbol(HIP_SYMBOL(Value), A, sizeof(int)*LEN, 0, hipMemcpyHostToDevice));
+    //directly copy does not work on rocm 14.
+    //
+    HIP_ASSERT(hipMemcpyToSymbol(HIP_SYMBOL(Value), A, sizeof(int)*LEN, 0, hipMemcpyHostToDevice));
 
     printf(" 2-------------- ");
 
