@@ -5,9 +5,9 @@
 
 
 #include <stdio.h>
-#include <hip_runtime.h>
-#include <hip_vector_types.h>
-#include <typeinfo> 
+#include <hip/hip_runtime.h>
+#include <hip/hip_vector_types.h>
+#include <typeinfo>
 //using namespace std;
 
 typedef float2 rocblas_float_complex;
@@ -91,7 +91,7 @@ rocblas_sum_kernel(hipLaunchParm lp, T *res, const T *A, size_t N)
         }
         else{
             return (double)(2*m*n)/1e9;
-        }    
+        }
 
     }
 
@@ -101,7 +101,7 @@ rocblas_sum_kernel(hipLaunchParm lp, T *res, const T *A, size_t N)
         return rand()/( (T)RAND_MAX + 1);
     };
 
-   //won't compile 
+   //won't compile
     template<typename T>
     void condition_test()
     {
@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
 
     printf("sgemv flops = %f\n", gemv_gflops<float>(N, N));
 
-    
+
 	printf ("info: check result\n");
 
     rocblas_float_complex result;

@@ -8,8 +8,10 @@
 #include <hip/hip_runtime.h>
 #include <hip/hip_vector_types.h>
 #include <typeinfo>
-#include "kernel.hpp"
 
+namespace oo{
+    #include "kernel.hpp"
+}
 //using namespace std;
 
 
@@ -20,8 +22,7 @@
 	}
 
 
-
-
+extern "C"
 int foo(int argc, char *argv[])
 {
 	void *A_d, *C_d;
@@ -57,7 +58,7 @@ int foo(int argc, char *argv[])
 	const unsigned threadsPerBlock = NB_X;
 
 	printf ("info: launch 'rocblas_sum_kernel' kernel\n");
-	hipLaunchKernel(HIP_KERNEL_NAME(rocblas_sum_kernel), dim3(blocks), dim3(threadsPerBlock), 0, 0, (float*)C_d, (float*)A_d, N);
+	hipLaunchKernel(HIP_KERNEL_NAME(oo::rocblas_sum_kernel), dim3(blocks), dim3(threadsPerBlock), 0, 0, (float*)C_d, (float*)A_d, N);
 
 	printf ("info: copy Device2Host\n");
     CHECK ( hipMemcpy(C_h, C_d, sizeof(float), hipMemcpyDeviceToHost));

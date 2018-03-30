@@ -57,6 +57,8 @@ struct device_mem_deleter
 };
 
 
+#define SIZE 1024
+
 int main(int argc, char *argv[])
 {
 
@@ -74,7 +76,7 @@ int main(int argc, char *argv[])
     *float_object = 4;
 
     //using new in unique_ptr, which stores a array 
-    unique_ptr< float[], host_mem_array_deleter > float_array_object (new float[3] );
+    unique_ptr< float[], host_mem_array_deleter > float_array_object (new float[SIZE] );
     float_array_object[0] = float_array_object[1] = float_array_object[2] = 5;
 
 
@@ -109,14 +111,16 @@ int main(int argc, char *argv[])
     //preferred 
     hipStream_t stream;
     hipStreamCreate(&stream);
-    unique_ptr< hipStream_t, hipStream_deleter > stream_object_2 (&stream);
+    unique_ptr< hipStream_t, hipStream_deleter > stream_object_2;
+    stream_object_2 = unique_ptr< hipStream_t, hipStream_deleter >( &stream );
 
+    
 
     /*===========================================
              hipMalloc  experiment: mixed  
     =============================================*/
 
-    size_t Nbyte = 1024 * sizeof(float);
+    size_t Nbytes = SIZE * sizeof(float);
 
     unique_ptr< float, device_mem_deleter > hip_object(new float);
     //Does not compile :           hipMalloc(&(hip_object.get()), Nbyte);
@@ -125,10 +129,14 @@ int main(int argc, char *argv[])
 
     //preferred
     float *device_pointer; 
-    hipMalloc(&device_pointer, Nbyte);
+    hipMalloc(&device_pointer, Nbytes);
     unique_ptr<float, device_mem_deleter>  device_object (device_pointer);
 
     //Does not compile :           unique_ptr< device_pointer, device_mem_deleter > hip_object_2;
+
+    //copy data from host to device 
+    CHECK ( hipMemcpy(device_object.get(), float_array_object.get(), Nbytes, hipMemcpyHostToDevice));
+
 
     //printf("A_d=%f\n", A_d);
 

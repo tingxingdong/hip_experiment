@@ -21,7 +21,7 @@
 
 
 
-
+extern "C"
 int goo(int argc, char *argv[])
 {
 	void *A_d, *C_d;
