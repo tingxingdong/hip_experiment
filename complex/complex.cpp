@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
 	const unsigned threadsPerBlock = NB_X;
 
 	printf ("info: launch 'rocblas_sum_kernel' kernel\n");
-	hipLaunchKernel(HIP_KERNEL_NAME(rocblas_sum_kernel), dim3(blocks), dim3(threadsPerBlock), 0, 0, C_d, A_d, N);
+	hipLaunchKernelGGL(HIP_KERNEL_NAME(rocblas_sum_kernel), dim3(blocks), dim3(threadsPerBlock), 0, 0, C_d, A_d, N);
 
 	printf ("info: copy Device2Host\n");
     CHECK ( hipMemcpy(C_h, C_d, sizeof(rocblas_float_complex), hipMemcpyDeviceToHost));

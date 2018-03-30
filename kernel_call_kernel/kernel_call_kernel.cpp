@@ -84,7 +84,7 @@ rocblas_sum_kernel(hipLaunchParm lp, T *res, const T *A, size_t N)
 
     rocblas_sum_reduce<NB_X, T>(tx, shared_A);
 
-	hipLaunchKernel(HIP_KERNEL_NAME(dummy_kernel<T>), dim3(1), dim3(1), 0, 0, N);
+	hipLaunchKernelGGL(HIP_KERNEL_NAME(dummy_kernel<T>), dim3(1), dim3(1), 0, 0, N);
 
     if(tx == 0) res[0] = shared_A[0] ;
 }
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
 	const unsigned threadsPerBlock = NB_X;
 
 	printf ("info: launch 'rocblas_sum_kernel' kernel\n");
-	hipLaunchKernel(HIP_KERNEL_NAME(rocblas_sum_kernel), dim3(blocks), dim3(threadsPerBlock), 0, 0, C_d, A_d, N);
+	hipLaunchKernelGGL(HIP_KERNEL_NAME(rocblas_sum_kernel), dim3(blocks), dim3(threadsPerBlock), 0, 0, C_d, A_d, N);
 
 	printf ("info: copy Device2Host\n");
     CHECK ( hipMemcpy(C_h, C_d, sizeof(float), hipMemcpyDeviceToHost));

@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
     }
 
     for(int i=0; i<NUM_STREAMS; i++){
-	    hipLaunchKernel(HIP_KERNEL_NAME(vector_square), dim3(blocks), dim3(threadsPerBlock), 0, streams[i], C_d+i*N, A_d+i*N, N);
+	    hipLaunchKernelGGL(HIP_KERNEL_NAME(vector_square), dim3(blocks), dim3(threadsPerBlock), 0, streams[i], C_d+i*N, A_d+i*N, N);
     }
 
     for(int i=0; i<NUM_STREAMS; i++){

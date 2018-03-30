@@ -48,7 +48,7 @@ int main()
 
 
 
-    hipLaunchKernel(Get, dim3(1,1,1), dim3(LEN,1,1), 0, 0, Ad);
+    hipLaunchKernelGGL(Get, dim3(1,1,1), dim3(LEN,1,1), 0, 0, Ad);
 
     printf(" 3-------------- ");
 

@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
         hipStreamCreate(&streams[thread_id]); 
 
 
-	    hipLaunchKernel(HIP_KERNEL_NAME(vector_square), dim3(blocks), dim3(threadsPerBlock), 0, streams[thread_id], 
+	    hipLaunchKernelGGL(HIP_KERNEL_NAME(vector_square), dim3(blocks), dim3(threadsPerBlock), 0, streams[thread_id], 
                         C_d+thread_id*N, A_d+thread_id*N, N);
 
 

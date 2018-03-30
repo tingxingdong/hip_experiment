@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
 
 
 	printf ("info: launch 'rocblas_sum_kernel' kernel\n");
-	hipLaunchKernel(HIP_KERNEL_NAME(rocblas_sum_kernel<float, NB_X>), dim3(blocks), dim3(threadsPerBlock), 0, 0, C_d, A_d, N);
+	hipLaunchKernelGGL(HIP_KERNEL_NAME(rocblas_sum_kernel<float, NB_X>), dim3(blocks), dim3(threadsPerBlock), 0, 0, C_d, A_d, N);
 
 	printf ("info: copy Device2Host\n");
 

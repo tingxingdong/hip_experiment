@@ -134,7 +134,7 @@ void no_cache(float *A_h, float *A_d, float *X_h, float *X_d, float *Y_h, float 
         double time; 
         time = rocblas_wtime();
 
-	    hipLaunchKernel(HIP_KERNEL_NAME(gemv_kernel), dim3(blocks), dim3(threadsPerBlock), 0, 0, A_d, X_d, Y_d, num_row);
+	    hipLaunchKernelGGL(HIP_KERNEL_NAME(gemv_kernel), dim3(blocks), dim3(threadsPerBlock), 0, 0, A_d, X_d, Y_d, num_row);
     
         //time = rocblas_wtime() - time;
 
