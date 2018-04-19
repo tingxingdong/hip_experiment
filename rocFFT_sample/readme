@@ -1,0 +1,4 @@
+compile option
+
+hipcc -std=c++11 rocfft_example.cpp -o rocfft_example -D__HIP_PLATFORM_NVCC__ -L/opt/rocm/lib -L/opt/rocm/rocfft/lib -lrocfft -lrocfft-device -I/opt/rocm/rocfft/include -I/opt/rocm/include 
+
